@@ -7,8 +7,9 @@ $trains_mse = json_decode(file_get_contents('https://tool.piagno.ch/paab/fetch_m
 $req = $db->prepare('SELECT * FROM paab_config WHERE parameter = "Fupdated"');
 $req->execute();
 $db_updated = ($req->fetchAll())[0]['value'];
+if(!is_numeric ($db_updated)){$db_updated = 9999;} 
 $fetch_updated = substr($trains_mse->updated,0,2).substr($trains_mse->updated,3,2);
-if(($fetch_updated >= $db_updated && $fetch_updated - $db_updated < 1000) || ($db_updated > 16 && $fetch_updated < 10)){
+if(($fetch_updated >= $db_updated && $fetch_updated - $db_updated < 1000) || ($db_updated > 16 && $fetch_updated < 10) || $db_updated == 9999){
 	$today = date('Y-m-d ');
 	$tomorrow = date('Y-m-d ',strtotime("+1 days"));
 	$yesterday = date('Y-m-d ',strtotime("-1 days"));
