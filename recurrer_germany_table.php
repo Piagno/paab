@@ -19,7 +19,6 @@ foreach($requests as $request){
 	$trains = simplexml_load_string($response);
 	foreach($trains as $train){
 		if(str_contains($train->dp['ppth'],'Basel SBB')){
-			echo '<br />';
 			$train_type = trim($train->tl['c'].' '.$train->dp['l']);
 			if($train->tl['c'] == 'SBB'){
 				$train_type = $train->dp['l'];
