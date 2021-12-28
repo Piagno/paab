@@ -2,7 +2,9 @@
 require 'db.php';
 require 'inner_api.php';
 if(isset($argv)){
-	sleep($argv[1]);
+	if(isset($argv[1])){
+		sleep($argv[1]);
+	}
 }
 $trains_mse = json_decode(file_get_contents('https://tool.piagno.ch/paab/fetch_mse.php'));
 //$trains_stl = json_decode(file_get_contents('https://tool.piagno.ch/paab/fetch_stl.php'));
