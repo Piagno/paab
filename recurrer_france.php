@@ -25,7 +25,7 @@ if(($fetch_updated >= $db_updated && $fetch_updated - $db_updated < 1000) || ($d
 	foreach($req->fetchAll() as $stored_train){
 		$passed = true;
 		foreach($trains_mse->trains as $fetched_train){
-			if($stored_train['train_number'] == $train->num){
+			if($stored_train['train_number'] == $fetched_train->num){
 				$passed = false;
 			}
 		}
