@@ -13,8 +13,8 @@ $now = strtotime('now');
 foreach($req->fetchAll() as $stored_train){
 	$found = false;
 	foreach($forecast as $forecast_train){
-		$found = true;
 		if(substr($stored_train['train_id'],1) == $forecast_train['id']){
+			$found = true;
 			//echo('found the train: '.$stored_train['train_number'].' ');
 			if($forecast_train->dp['cs'] == 'c'){
 				$stored_train['drives'] = 'outage';
