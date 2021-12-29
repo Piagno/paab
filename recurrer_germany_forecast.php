@@ -16,11 +16,6 @@ foreach($req->fetchAll() as $stored_train){
 		$found = true;
 		if(substr($stored_train['train_id'],1) == $forecast_train['id']){
 			//echo('found the train: '.$stored_train['train_number'].' ');
-			$planned_departure_time = new DateTime($stored_train['departure_time']);
-			$dp_raw = $forecast_train->dp['ct'];
-			$forecast_departure_time = new DateTime('20'.substr($dp_raw,0,2).'-'.substr($dp_raw,2,2).'-'.substr($dp_raw,4,2).' '.substr($dp_raw,6,2).':'.substr($dp_raw,8,2).':00');
-			$retard = $planned_departure_time->diff($forecast_departure_time);
-			$stored_train['estimated_retard'] = $retard->format('%i');
 			if($forecast_train->dp['cs'] == 'c'){
 				$stored_train['drives'] = 'outage';
 				if(strtotime($stored_train['departure_time'].' + '.($stored_train['normal_run_time'] + 5).' minutes') < $now){
@@ -31,6 +26,11 @@ foreach($req->fetchAll() as $stored_train){
 					add_update_train($stored_train);
 				}
 			}else{
+				$planned_departure_time = new DateTime($stored_train['departure_time']);
+				$dp_raw = $forecast_train->dp['ct'];
+				$forecast_departure_time = new DateTime('20'.substr($dp_raw,0,2).'-'.substr($dp_raw,2,2).'-'.substr($dp_raw,4,2).' '.substr($dp_raw,6,2).':'.substr($dp_raw,8,2).':00');
+				$retard = $planned_departure_time->diff($forecast_departure_time);
+				$stored_train['estimated_retard'] = $retard->format('%i');
 				if(strtotime($stored_train['departure_time'].' + '.($stored_train['estimated_retard'] + $stored_train['normal_run_time'] + 5).' minutes') < $now){
 					//echo('train should have arrived - removing it');
 					remove_train($stored_train);
