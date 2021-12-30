@@ -6,7 +6,7 @@ if(isset($argv)){
 		sleep($argv[1]);
 	}
 }
-$forecast = simplexml_load_string(file_get_contents('https://tool.piagno.ch/paab/fetch_bad_forecast.php'));
+$forecast = simplexml_load_string(file_get_contents('https://iris.noncd.db.de/iris-tts/timetable/fchg/8000026'));
 $req = $db->prepare('SELECT * FROM paab_trains WHERE train_id LIKE "G%"');
 $req->execute();
 $now = strtotime('now');

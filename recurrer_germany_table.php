@@ -4,8 +4,8 @@ require 'inner_api.php';
 function create_request_data($time_input){
 	$time = strtotime($time_input);
 	return array(
-		date('ymd',$time),
-		date('H',$time)
+		'hour' => date('ymd',$time),
+		'minute' => date('H',$time)
 	);
 }
 $requests = array(
@@ -15,7 +15,7 @@ $requests = array(
 	create_request_data('+3 hours')
 );
 foreach($requests as $request){
-	$response = file_get_contents('https://tool.piagno.ch/paab/fetch_bad_table.php?date='.$request[0].'&hour='.$request[1]);
+	$response = file_get_contents('https://iris.noncd.db.de/iris-tts/timetable/plan/8000026/'.$request['hour'].'/'.$request['minute']);
 	$trains = simplexml_load_string($response);
 	foreach($trains as $train){
 		if(str_contains($train->dp['ppth'],'Basel SBB')){

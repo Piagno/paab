@@ -6,8 +6,8 @@ if(isset($argv)){
 		sleep($argv[1]);
 	}
 }
-$trains_mse = json_decode(file_get_contents('https://tool.piagno.ch/paab/fetch_mse.php'));
-//$trains_stl = json_decode(file_get_contents('https://tool.piagno.ch/paab/fetch_stl.php'));
+$trains_mse = json_decode(file_get_contents('https://www.garesetconnexions.sncf/fr/train-times/MSE/departure'));
+//$trains_stl = json_decode(file_get_contents('https://www.garesetconnexions.sncf/fr/train-times/STL/departure'));
 $req = $db->prepare('SELECT * FROM paab_config WHERE parameter = "Fupdated"');
 $req->execute();
 $db_updated = ($req->fetchAll())[0]['value'];
