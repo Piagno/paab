@@ -10,7 +10,8 @@ $forecast = simplexml_load_string(file_get_contents('https://iris.noncd.db.de/ir
 $req = $db->prepare('SELECT * FROM paab_trains WHERE train_id LIKE "G%"');
 $req->execute();
 $now = strtotime('now');
-foreach($req->fetchAll() as $stored_train){
+$db_trains = $req->fetchAll();
+foreach($db_trains as $stored_train){
 	$found = false;
 	foreach($forecast as $forecast_train){
 		if(substr($stored_train['train_id'],1) == $forecast_train['id']){
@@ -49,5 +50,34 @@ foreach($req->fetchAll() as $stored_train){
 	if($found == false){
 		//echo("couldn't find train ".$stored_train['train_number'].' - deleting it');
 		remove_train($stored_train);
+	}
+}
+foreach($forecast as $forecast_train){
+	if(str_contains($forecast_train->dp['ppth'],'Basel SBB')){
+		$add = true;
+		foreach($db_trains as $stored_train){
+			if($forecast_train['id'] == substr($stored_train['train_id'],1)){$add = false;}
+		}
+		if($add){
+			$dp_raw = $forecast_train->dp['pt'];
+			$departure_time = '20'.substr($dp_raw,0,2).'-'.substr($dp_raw,2,2).'-'.substr($dp_raw,4,2).' '.substr($dp_raw,6,2).':'.substr($dp_raw,8,2).':00';
+			$additional_info = null;
+			if($forecast_train->ref){
+				$additional_info = 'Ersatzzug für '.$forecast_train->ref->tl['c'].' '.$forecast_train->ref->tl['n'];
+			}
+			add_update_train(array(
+				'train_id' => ('G'.$forecast_train['id']),
+				'train_number' => $forecast_train->tl['n'],
+				'departure_time' => $departure_time,
+				'estimated_retard' => 0,
+				'destination' => $forecast_train->dp['ppth'],
+				'drives' => 1,
+				'effective_departure_time' => null,
+				'train_type' => $forecast_train->tl['c'],
+				'departure_station' => 'Basel Bad Bf',
+				'normal_run_time' => 8,
+				'additional_info' => $additional_info
+			));
+		}
 	}
 }
