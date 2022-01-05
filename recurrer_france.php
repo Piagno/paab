@@ -77,13 +77,15 @@ if(($fetch_updated >= $db_updated && $fetch_updated - $db_updated < 1000) || ($d
 			$estimated_retard = 0;
 			$drives = true;
 			$additional_info = null;
-			switch(substr($train->infos,-3)){
-				case 'sup':
+			switch(true){
+				case ($train->infos == 'sup'):
 					$drives = 'outage';
 					break;
-				case 'min':
+				case (substr($train->infos,-3) == 'min'):
 					$estimated_retard = (int)substr($train->infos,0,2);
 					break;
+				case (substr($train->infos,1,1) == 'h'):
+					$estimated_retard = (((int)substr($train->infos,0,1) * 60) + (int)substr($train->infos,2,2));
 				default:
 					$additional_info = $train->infos;
 			}
