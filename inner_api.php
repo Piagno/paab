@@ -45,8 +45,9 @@ function add_update_train($train,$no_forecast = false){
 		if($no_forecast){
 			$definitive_arrival = date($train['departure_time'],($train['normal_run_time'] + 5));
 		}else{
-			if($train['effective_departure_time'] == null){
+			if($train['effective_departure_time'] != null){
 				$definitive_arrival = date($train['effective_departure_time'],($train['normal_run_time'] + 5));
+				
 			}else{
 				$definitive_arrival = date($train['departure_time'], ($train['estimated_retard'] + $train['normal_run_time'] + 5));
 			}
