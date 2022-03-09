@@ -40,26 +40,39 @@ function add_update_train($train,$no_forecast = false){
 			return true;
 		}
 	}else{
-		$req;
+		$not_driven = false;
+		$definitive_arrival;
 		if($no_forecast){
-			$req = $db->prepare('INSERT INTO paab_trains (train_id, train_number, departure_time, estimated_retard, destination, drives, train_type, departure_station, normal_run_time) VALUES (:train_id, :train_number, :departure_time, 0, :destination, :drives, :train_type, :departure_station, :normal_run_time)');
+			$definitive_arrival = date($train['departure_time'],($train['normal_run_time'] + 5));
 		}else{
-			$req = $db->prepare('INSERT INTO paab_trains (train_id, train_number, departure_time, estimated_retard, destination, drives, effective_departure_time, train_type, departure_station, normal_run_time, additional_info) VALUES (:train_id, :train_number, :departure_time, :estimated_retard, :destination, :drives, :effective_departure_time, :train_type, :departure_station, :normal_run_time, :additional_info)');
-			$req->bindParam(':estimated_retard',$train['estimated_retard']);
-			$req->bindParam(':effective_departure_time',$train['effective_departure_time']);
-			$req->bindParam(':additional_info',$train['additional_info']);
+			if($train['effective_departure_time'] == null){
+				$definitive_arrival = date($train['effective_departure_time'],($train['normal_run_time'] + 5));
+			}else{
+				$definitive_arrival = date($train['departure_time'], ($train['estimated_retard'] + $train['normal_run_time'] + 5));
+			}
 		}
-		$req->bindParam(':train_id',$train['train_id']);
-		$req->bindParam(':train_number',$train['train_number']);
-		$req->bindParam(':departure_time',$train['departure_time']);
-		$req->bindParam(':destination',$train['destination']);
-		$req->bindParam(':drives',$train['drives']);
-		$req->bindParam(':train_type',$train['train_type']);
-		$req->bindParam(':departure_station',$train['departure_station']);
-		$req->bindParam(':normal_run_time',$train['normal_run_time']);
-		$req->execute();
-		if($req->rowCount() == 1){
-			return true;
+		if($definitive_arrival > date('Y-m-d H:i:s')){
+			$req;
+			if($no_forecast){
+				$req = $db->prepare('INSERT INTO paab_trains (train_id, train_number, departure_time, estimated_retard, destination, drives, train_type, departure_station, normal_run_time) VALUES (:train_id, :train_number, :departure_time, 0, :destination, :drives, :train_type, :departure_station, :normal_run_time)');
+			}else{
+				$req = $db->prepare('INSERT INTO paab_trains (train_id, train_number, departure_time, estimated_retard, destination, drives, effective_departure_time, train_type, departure_station, normal_run_time, additional_info) VALUES (:train_id, :train_number, :departure_time, :estimated_retard, :destination, :drives, :effective_departure_time, :train_type, :departure_station, :normal_run_time, :additional_info)');
+				$req->bindParam(':estimated_retard',$train['estimated_retard']);
+				$req->bindParam(':effective_departure_time',$train['effective_departure_time']);
+				$req->bindParam(':additional_info',$train['additional_info']);
+			}
+			$req->bindParam(':train_id',$train['train_id']);
+			$req->bindParam(':train_number',$train['train_number']);
+			$req->bindParam(':departure_time',$train['departure_time']);
+			$req->bindParam(':destination',$train['destination']);
+			$req->bindParam(':drives',$train['drives']);
+			$req->bindParam(':train_type',$train['train_type']);
+			$req->bindParam(':departure_station',$train['departure_station']);
+			$req->bindParam(':normal_run_time',$train['normal_run_time']);
+			$req->execute();
+			if($req->rowCount() == 1){
+				return true;
+			}
 		}
 	}
 	return false;
