@@ -29,9 +29,13 @@ foreach($db_trains as $stored_train){
 				}else{
 					$planned_departure_time = new DateTime($stored_train['departure_time']);
 					$dp_raw = $forecast_train->dp['ct'];
-					$forecast_departure_time = new DateTime('20'.substr($dp_raw,0,2).'-'.substr($dp_raw,2,2).'-'.substr($dp_raw,4,2).' '.substr($dp_raw,6,2).':'.substr($dp_raw,8,2).':00');
-					$retard = $planned_departure_time->diff($forecast_departure_time);
-					$stored_train['estimated_retard'] = $retard->format('%i');
+					if($dp_raw == null){
+						$stored_train['estimated_retard'] = 0;
+					}else{
+						$forecast_departure_time = new DateTime('20'.substr($dp_raw,0,2).'-'.substr($dp_raw,2,2).'-'.substr($dp_raw,4,2).' '.substr($dp_raw,6,2).':'.substr($dp_raw,8,2).':00');
+						$retard = $planned_departure_time->diff($forecast_departure_time);
+						$stored_train['estimated_retard'] = $retard->format('%i');
+					}
 				}
 				if(strtotime($stored_train['departure_time'].' + '.($stored_train['estimated_retard'] + $stored_train['normal_run_time'] + 5).' minutes') < $now){
 					remove_train($stored_train);
