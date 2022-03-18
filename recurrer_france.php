@@ -86,6 +86,7 @@ if(($fetch_updated >= $db_updated && $fetch_updated - $db_updated < 1000) || ($d
 					break;
 				case (substr($train->infos,1,1) == 'h'):
 					$estimated_retard = (((int)substr($train->infos,0,1) * 60) + (int)substr($train->infos,2,2));
+					break;
 				default:
 					$additional_info = $train->infos;
 			}
