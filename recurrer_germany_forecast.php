@@ -12,10 +12,8 @@ $req->execute();
 $now = strtotime('now');
 $db_trains = $req->fetchAll();
 foreach($db_trains as $stored_train){
-	$found = false;
 	foreach($forecast as $forecast_train){
 		if(substr($stored_train['train_id'],1) == $forecast_train['id']){
-			$found = true;
 			if($forecast_train->dp['cs'] == 'c'){
 				$stored_train['drives'] = 'outage';
 				if(strtotime($stored_train['departure_time'].' + '.($stored_train['normal_run_time'] + 5).' minutes') < $now){
@@ -47,9 +45,6 @@ foreach($db_trains as $stored_train){
 				}
 			}
 		}
-	}
-	if($found == false){
-		remove_train($stored_train);
 	}
 }
 foreach($forecast as $forecast_train){
