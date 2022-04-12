@@ -34,7 +34,7 @@ foreach($db_trains as $stored_train){
 					}else{
 						$forecast_departure_time = new DateTime('20'.substr($dp_raw,0,2).'-'.substr($dp_raw,2,2).'-'.substr($dp_raw,4,2).' '.substr($dp_raw,6,2).':'.substr($dp_raw,8,2).':00');
 						$retard = $planned_departure_time->diff($forecast_departure_time);
-						$stored_train['estimated_retard'] = $retard->format('%i');
+						$stored_train['estimated_retard'] = $retard->format('%i') + ($retard->format('%h') * 60);
 					}
 				}
 				if(strtotime($stored_train['departure_time'].' + '.($stored_train['estimated_retard'] + $stored_train['normal_run_time'] + 5).' minutes') < $now){
