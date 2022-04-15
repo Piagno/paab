@@ -12,7 +12,11 @@ $requests = array(
 	create_request_data('now'),
 	create_request_data('+1 hour'),
 	create_request_data('+2 hours'),
-	create_request_data('+3 hours')
+	create_request_data('+3 hours'),
+	create_request_data('+4 hours'),
+	create_request_data('+5 hours'),
+	create_request_data('+6 hours'),
+	create_request_data('+7 hours')
 );
 foreach($requests as $request){
 	$response = file_get_contents('https://iris.noncd.db.de/iris-tts/timetable/plan/8000026/'.$request['hour'].'/'.$request['minute']);
