@@ -22,7 +22,7 @@ foreach($db_trains as $stored_train){
 					add_update_train($stored_train);
 				}
 			}else{
-				if($forecast_train->dp == ''){
+				if($forecast_train->dp == '' && (is_object($forecast_train->dp) == false)){
 					$stored_train['estimated_retard'] = 0;
 				}else{
 					$planned_departure_time = new DateTime($stored_train['departure_time']);
