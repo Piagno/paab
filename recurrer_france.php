@@ -7,7 +7,6 @@ if(isset($argv)){
 	}
 }
 $trains_mse = json_decode(file_get_contents('https://www.garesetconnexions.sncf/fr/train-times/MSE/departure'));
-//$trains_stl = json_decode(file_get_contents('https://www.garesetconnexions.sncf/fr/train-times/STL/departure'));
 $req = $db->prepare('SELECT * FROM paab_config WHERE parameter = "Fupdated"');
 $req->execute();
 $db_updated = ($req->fetchAll())[0]['value'];
@@ -103,6 +102,34 @@ if(($fetch_updated >= $db_updated && $fetch_updated - $db_updated < 1000) || ($d
 				'normal_run_time' => $travel_time,
 				'additional_info' => $additional_info
 			));
+		}
+	}
+	//OUTAGE STL
+	$trains_stl = json_decode(file_get_contents('https://www.garesetconnexions.sncf/fr/train-times/STL/departure'));
+	foreach($trains_mse->trains as $fetched_train){
+		if($fetched_train->infos == 'sup'){
+			$req = $db->prepare('SELECT * FROM paab_trains WHERE train_id LIKE "F%"');
+			$req->execute();
+			foreach($req->fetchAll() as $stored_train){
+				if($stored_train['train_number'] == $fetched_train->num){
+					//if($stored_train['drives'] != 'outage'){
+					if($stored_train['drives'] == '1'){
+						add_update_train(array(
+							'train_id' => $stored_train['train_id'],
+							'train_number' => $stored_train['train_number'],
+							'departure_time' => $stored_train['departure_time'],
+							'estimated_retard' => $stored_train['estimated_retard'],
+							'destination' => $stored_train['destination'],
+							'drives' => 'outage_stl',
+							'effective_departure_time' => $stored_train['effective_departure_time'],
+							'train_type' => $stored_train['train_type'],
+							'departure_station' => $stored_train['departure_station'],
+							'normal_run_time' => $stored_train['normal_run_time'],
+							'additional_info' => $stored_train['additional_info']
+						));
+					}
+				}
+			}
 		}
 	}
 }
