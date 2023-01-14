@@ -35,7 +35,7 @@ foreach($req->fetchAll() as $train_paab){
 }
 foreach($trains_mse as $train){
 	if($train->trainMode == "TRAIN"){
-		if($train->traffic->destination == "Basel SBB" || $train->traffic->destination == "Zuerich HB" || $train->traffic->oldDestination == "Basel SBB" || $train->traffic->oldDestination == "Zuerich HB"){
+		if($train->traffic->destination == "Basel SBB" || $train->traffic->destination == "Zuerich HB" || $train->traffic->oldDestination == "Basel SBB" || $train->traffic->oldDestination == "Zuerich HB" || $train->traffic->destination == 'Bâle - SBB' || $train->traffic->oldDestination == 'Bâle - SBB' || $train->traffic->destination == 'Zürich - Hauptbahnhof' || $train->traffic->oldDestination == 'Zürich - Hauptbahnhof'){
 			if($train->trainType == "Lyria" || $train->trainType == "Train TER"){
 				$drives = 1;
 				$additional_info = '';
