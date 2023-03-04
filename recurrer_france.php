@@ -35,7 +35,7 @@ foreach($req->fetchAll() as $train_paab){
 }
 foreach($trains_mse as $train){
 	if($train->trainMode == "TRAIN"){
-		if($train->traffic->destination == "Basel SBB" || $train->traffic->destination == "Zuerich HB" || $train->traffic->oldDestination == "Basel SBB" || $train->traffic->oldDestination == "Zuerich HB" || $train->traffic->destination == 'Bâle - SBB' || $train->traffic->oldDestination == 'Bâle - SBB' || $train->traffic->destination == 'Zürich - Hauptbahnhof' || $train->traffic->oldDestination == 'Zürich - Hauptbahnhof'){
+		if($train->traffic->destination == "Basel SBB" || $train->traffic->destination == "Zuerich HB" || $train->traffic->oldDestination == "Basel SBB" || $train->traffic->oldDestination == "Zuerich HB" || $train->traffic->destination == 'Bâle - SBB' || $train->traffic->oldDestination == 'Bâle - SBB' || $train->traffic->destination == 'Zürich - Hauptbahnhof' || $train->traffic->oldDestination == 'Zürich - Hauptbahnhof' || is_null($train->traffic->destination) || is_null($train->traffic->oldDestination)){
 			if($train->trainType == "Lyria" || $train->trainType == "Train TER"){
 				$drives = 1;
 				$additional_info = '';
@@ -63,6 +63,7 @@ foreach($trains_mse as $train){
 				$departure_time = explode("T",$train->scheduledTime)[0]." ".substr(explode("T",$train->scheduledTime)[1],0,8);
 				$estimated_retard = $train->informationStatus->delay;
 				if($estimated_retard == null){$estimated_retard = 0;}
+				if($train->traffic->destination == null){$train->traffic->destination = '';}
 				add_update_train(array(
 					'train_id' => ('F'.$train->trainNumber),
 					'train_number' => $train->trainNumber,
