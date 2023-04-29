@@ -46,6 +46,9 @@ foreach($db_trains as $stored_train){
 			}
 		}
 	}
+	if(strtotime($stored_train['departure_time'].' + 36 hours') < $now){
+		remove_train($stored_train);
+	}
 }
 foreach($forecast as $forecast_train){
 	if(str_contains($forecast_train->dp['ppth'],'Basel SBB')){
