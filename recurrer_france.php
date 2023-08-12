@@ -1,18 +1,24 @@
 <?php
 require 'db.php';
 require 'inner_api.php';
+require 'secret.php';
 if(isset($argv)){
 	if(isset($argv[1])){
 		sleep($argv[1]);
 	}
 }
-$trains_mse = json_decode(file_get_contents('https://sncf-appligares.azurewebsites.net/API/PIV/Departures/0087182063'));
+$trains_mse_data = file_get_contents('https://api.sncf.com/v1/coverage/sncf/stop_areas/stop_area:SNCF:85000109/arrivals?count=15',false,stream_context_create( [
+	'http' => [ 'header' => 'Authorization: '.$secret]
+] ) );
+$trains_mse = json_decode($trains_mse_data);
+$arrivals = $trains_mse->arrivals;
+
 $req = $db->prepare('SELECT * FROM paab_trains WHERE train_id LIKE "F%"');
 $req->execute();
 foreach($req->fetchAll() as $train_paab){
 	$passed = true;
-	foreach($trains_mse as $train_mse){
-		if($train_paab['train_number'] == $train_mse->trainNumber){
+	foreach($arrivals as $arrival){
+		if($train_paab['train_number'] == $arrival->display_informations->headsign){
 			$passed = false;
 		}
 	}
@@ -22,9 +28,27 @@ foreach($req->fetchAll() as $train_paab){
 			$delete_train_time = strtotime($train_paab['departure_time']) + ($train_paab['normal_run_time'] * 60) + 300;
 			if($delete_train_time < strtotime('now')){remove_train($train_paab);}
 		}
-		// Set effective departure time
+		// Set effective departure time or set outage
 		if($train_paab['effective_departure_time'] == null && $train_paab['drives'] == 1){
-			run_train($train_paab,date("Y-m-d H:i:s"));
+			$departure_time = new DateTime($train_paab['departure_time']);
+			$diff = $departure_time->diff(new DateTime('now'));
+			if($diff->i > 8){
+				add_update_train(array(
+					'train_id' => $train_paab['train_id'],
+					'train_number' => $train_paab['train_number'],
+					'departure_time' => $train_paab['departure_time'],
+					'estimated_retard' => $train_paab['estimated_retard'],
+					'destination' => $train_paab['destination'],
+					'drives' => 'outage',
+					'effective_departure_time' => $train_paab['effective_departure_time'],
+					'train_type' => $train_paab['train_type'],
+					'departure_station' => $train_paab['departure_station'],
+					'normal_run_time' => $train_paab['normal_run_time'],
+					'additional_info' => $train_paab['additional_info']
+				));
+			}else{
+				run_train($train_paab,date("Y-m-d H:i:s"));
+			}
 		}
 		// Remove if necessary
 		if($train_paab['drives'] == 'driven'){
@@ -33,50 +57,30 @@ foreach($req->fetchAll() as $train_paab){
 		}
 	}
 }
-foreach($trains_mse as $train){
-	if($train->trainMode == "TRAIN"){
-		if($train->traffic->destination == "Basel SBB" || $train->traffic->destination == "Zuerich HB" || $train->traffic->oldDestination == "Basel SBB" || $train->traffic->oldDestination == "Zuerich HB" || $train->traffic->destination == 'Bâle - SBB' || $train->traffic->oldDestination == 'Bâle - SBB' || $train->traffic->destination == 'Zürich - Hauptbahnhof' || $train->traffic->oldDestination == 'Zürich - Hauptbahnhof' || $train->traffic->destination == 'Saint-Louis' || $train->traffic->oldDestination == 'Saint-Louis'){
-			if($train->trainType == "Lyria" || $train->trainType == "Train TER"){
-				$drives = 1;
-				$additional_info = '';
-				switch($train->informationStatus->trainStatus){
-					case "NORMAL":
-					case "Ontime":
-					case "RETARD":
-						if($train->traffic->destination == "Saint-Louis"){
-							$drives = 'outage_stl';
-						}
-						break;
-					case "SUPPRESSION_TOTALE":
-					case "SUPPRESSION_PARTIELLE":
-						$drives = 'outage';
-						break;
-					default:
-						$additional_info = $train->informationStatus->trainStatus;
-				}
-				$travel_time = 31;
-				if($train->trainType == 'Train TER' && substr($train->trainNumber,0,3) == '962'){
-					$travel_time = 22;
-				}elseif($train->trainType == 'Lyria'){
-					$travel_time = 20;
-				}
-				$departure_time = explode("T",$train->scheduledTime)[0]." ".substr(explode("T",$train->scheduledTime)[1],0,8);
-				$estimated_retard = $train->informationStatus->delay;
-				if($estimated_retard == null){$estimated_retard = 0;}
-				add_update_train(array(
-					'train_id' => ('F'.$train->trainNumber),
-					'train_number' => $train->trainNumber,
-					'departure_time' => $departure_time,
-					'estimated_retard' => $estimated_retard,
-					'destination' => $train->traffic->destination,
-					'drives' => $drives,
-					'effective_departure_time' => null,
-					'train_type' => $train->trainType,
-					'departure_station' => 'Mulhouse',
-					'normal_run_time' => $travel_time,
-					'additional_info' => $additional_info
-				));
-			}
-		}
+
+foreach($arrivals as $arrival){
+	if($arrival->display_informations->physical_mode != 'Autocar' && $arrival->display_informations->direction != 'Paris - Gare de Lyon - Hall 1 & 2 (Paris)'){
+	$rt = $arrival->stop_date_time->base_arrival_date_time;
+	$arrival_time = substr($rt,0,4).'-'.substr($rt,4,2).'-'.substr($rt,6,2).' '.substr($rt,9,2).':'.substr($rt,11,2).':'.substr($rt,-2);
+	$rt = $arrival->stop_date_time->arrival_date_time;
+	$estimated_arrival_time = substr($rt,0,4).'-'.substr($rt,4,2).'-'.substr($rt,6,2).' '.substr($rt,9,2).':'.substr($rt,11,2).':'.substr($rt,-2);
+	$obj_arrival_time = new DateTime($arrival_time);
+	$obj_estimated_arrival_time = new DateTime($estimated_arrival_time);
+	$obj_estimated_retard = $obj_arrival_time->diff($obj_estimated_arrival_time);
+	$estimated_retard = $obj_estimated_retard->i;
+	$drives = 1;
+	add_update_train(array(
+		'train_id' => ('F'.$arrival->display_informations->headsign),
+		'train_number' => $arrival->display_informations->headsign,
+		'departure_time' => $arrival_time,
+		'estimated_retard' => $estimated_retard,
+		'destination' => $arrival->display_informations->direction,
+		'drives' => $drives,
+		'effective_departure_time' => null,
+		'train_type' => $arrival->display_informations->commercial_mode,
+		'departure_station' => '',
+		'normal_run_time' => 0,
+		'additional_info' => $arrival->display_informations->description
+	));
 	}
 }
