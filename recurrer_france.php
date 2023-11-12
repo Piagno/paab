@@ -67,7 +67,9 @@ foreach($arrivals as $arrival){
 	$obj_arrival_time = new DateTime($arrival_time);
 	$obj_estimated_arrival_time = new DateTime($estimated_arrival_time);
 	$obj_estimated_retard = $obj_arrival_time->diff($obj_estimated_arrival_time);
-	$estimated_retard = $obj_estimated_retard->i;
+	$intervalInSeconds = (new DateTime())->setTimeStamp(0)->add($obj_estimated_retard)->getTimeStamp();
+	$intervalInMinutes = $intervalInSeconds/60;
+	$estimated_retard = $intervalInMinutes;
 	$drives = 1;
 	add_update_train(array(
 		'train_id' => ('F'.$arrival->display_informations->headsign),
