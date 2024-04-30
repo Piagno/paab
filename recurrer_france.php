@@ -11,6 +11,7 @@ $trains_mse_data = file_get_contents('https://api.sncf.com/v1/coverage/sncf/stop
 	'http' => [ 'header' => 'Authorization: '.$secret]
 ] ) );
 $trains_mse = json_decode($trains_mse_data);
+echo ($trains_mse_data);
 $arrivals = $trains_mse->arrivals;
 
 $req = $db->prepare('SELECT * FROM paab_trains WHERE train_id LIKE "F%"');
@@ -60,10 +61,13 @@ foreach($req->fetchAll() as $train_paab){
 
 foreach($arrivals as $arrival){
 	if($arrival->display_informations->physical_mode != 'Autocar' && $arrival->display_informations->direction != 'Paris - Gare de Lyon - Hall 1 & 2 (Paris)'){
-	$rt = $arrival->stop_date_time->base_arrival_date_time;
-	$arrival_time = substr($rt,0,4).'-'.substr($rt,4,2).'-'.substr($rt,6,2).' '.substr($rt,9,2).':'.substr($rt,11,2).':'.substr($rt,-2);
-	$rt = $arrival->stop_date_time->arrival_date_time;
-	$estimated_arrival_time = substr($rt,0,4).'-'.substr($rt,4,2).'-'.substr($rt,6,2).' '.substr($rt,9,2).':'.substr($rt,11,2).':'.substr($rt,-2);
+		$rt = $arrival->stop_date_time->arrival_date_time;
+		$estimated_arrival_time = substr($rt,0,4).'-'.substr($rt,4,2).'-'.substr($rt,6,2).' '.substr($rt,9,2).':'.substr($rt,11,2).':'.substr($rt,-2);
+		$arrival_time = $estimated_arrival_time;
+		if(isset($arrival->stop_date_time->base_arrival_date_time)){
+			$rt = $arrival->stop_date_time->base_arrival_date_time;
+			$arrival_time = substr($rt,0,4).'-'.substr($rt,4,2).'-'.substr($rt,6,2).' '.substr($rt,9,2).':'.substr($rt,11,2).':'.substr($rt,-2);
+		}
 	$obj_arrival_time = new DateTime($arrival_time);
 	$obj_estimated_arrival_time = new DateTime($estimated_arrival_time);
 	$obj_estimated_retard = $obj_arrival_time->diff($obj_estimated_arrival_time);
