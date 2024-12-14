@@ -7,11 +7,10 @@ if(isset($argv)){
 		sleep($argv[1]);
 	}
 }
-$trains_mse_data = file_get_contents('https://api.sncf.com/v1/coverage/sncf/stop_areas/stop_area:SNCF:85000109/arrivals?count=15',false,stream_context_create( [
+$trains_mse_data = file_get_contents('https://api.sncf.com/v1/coverage/sncf/stop_areas/stop_area:SNCF:85000109/arrivals?count=30',false,stream_context_create( [
 	'http' => [ 'header' => 'Authorization: '.$secret]
 ] ) );
 $trains_mse = json_decode($trains_mse_data);
-echo ($trains_mse_data);
 $arrivals = $trains_mse->arrivals;
 
 $req = $db->prepare('SELECT * FROM paab_trains WHERE train_id LIKE "F%"');
