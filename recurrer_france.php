@@ -7,7 +7,7 @@ if(isset($argv)){
 		sleep($argv[1]);
 	}
 }
-$trains_mse_data = file_get_contents('https://api.sncf.com/v1/coverage/sncf/stop_areas/stop_area:SNCF:85000109/arrivals?count=30',false,stream_context_create( [
+$trains_mse_data = file_get_contents('https://api.sncf.com/v1/coverage/sncf/stop_areas/stop_area:SNCF:85000109/arrivals?count=15&forbidden_uris[]=commercial_mode:additional_service',false,stream_context_create( [
 	'http' => [ 'header' => 'Authorization: '.$secret]
 ] ) );
 $trains_mse = json_decode($trains_mse_data);
@@ -59,7 +59,7 @@ foreach($req->fetchAll() as $train_paab){
 }
 
 foreach($arrivals as $arrival){
-	if($arrival->display_informations->physical_mode != 'Autocar' && $arrival->display_informations->direction != 'Paris - Gare de Lyon - Hall 1 & 2 (Paris)' && $arrival->display_informations->commercial_mode != 'additional service'){
+	if($arrival->display_informations->physical_mode != 'Autocar' && $arrival->display_informations->direction != 'Paris - Gare de Lyon - Hall 1 & 2 (Paris)'){
 		$rt = $arrival->stop_date_time->arrival_date_time;
 		$estimated_arrival_time = substr($rt,0,4).'-'.substr($rt,4,2).'-'.substr($rt,6,2).' '.substr($rt,9,2).':'.substr($rt,11,2).':'.substr($rt,-2);
 		$arrival_time = $estimated_arrival_time;
