@@ -1,10 +1,8 @@
 <?php
 require 'db.php';
 require 'inner_api.php';
-if(isset($argv)){
-	if(isset($argv[1])){
-		sleep($argv[1]);
-	}
+if($_GET['delay'] > 0){
+	sleep($_GET['delay']);
 }
 $forecast = simplexml_load_string(file_get_contents('https://iris.noncd.db.de/iris-tts/timetable/fchg/8000026'));
 $req = $db->prepare('SELECT * FROM paab_trains WHERE train_id LIKE "G%"');
