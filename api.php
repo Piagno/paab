@@ -9,13 +9,13 @@ foreach($req->fetchAll() as $train){
 		'train_id' => $train['train_id'],
 		'train_number' => $train['train_number'],
 		'departure_time' => $train['departure_time'],
-		'estimated_retard' => $train['estimated_retard'],
+		'estimated_retard' => strval($train['estimated_retard']),
 		'destination' => $train['destination'],
 		'drives' => $train['drives'],
 		'effective_departure_time' => $train['effective_departure_time'],
 		'train_type' => $train['train_type'],
 		'departure_station' => $train['departure_station'],
-		'normal_run_time' => $train['normal_run_time'],
+		'normal_run_time' => strval($train['normal_run_time']),
 		'additional_info' => $train['additional_info']
 	);
 }
